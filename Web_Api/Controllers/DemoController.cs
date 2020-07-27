@@ -56,8 +56,17 @@ namespace Web_Api.Controllers
 
 
 
+    /// <summary>
+    /// Points to Remember while working with Web API Post Method:
+    /// 1 >> If a method return type is void in Web API Service then by default Web API Service return the status code 204 No Content.
+    /// 2 >> When a new item is created, we should be returning status code 201 Item Created.
+    /// 3 >> With 201 status code, we should also include the location i.e. URI of the newly created item.
+    /// 
+    /// </summary>
+
     public class DemoController : ApiController
     {
+
         private ApplicationContext _applicationContext;
         public DemoController()
         {
@@ -91,17 +100,26 @@ namespace Web_Api.Controllers
             }
         }
 
-        public IHttpActionResult Post(User user)
+        public HttpResponseMessage Post([FromBody] User user)
         {
-            if (ModelState.IsValid)
+            try
             {
-              var _user=   _applicationContext.Users.Add(user);
-                _applicationContext.SaveChanges();
-                return Ok(_user);
+                if (ModelState.IsValid)
+                {
+                    var _user = _applicationContext.Users.Add(user);
+                    _applicationContext.SaveChanges();
+                    var massage = Request.CreateResponse(HttpStatusCode.Created, _user);
+                    massage.Headers.Location = new Uri(Request.RequestUri + _user.UserId.ToString());
+                    return massage;
+                }
+                else
+                {
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid Date");
+                        }
             }
-            else
+            catch (Exception ex)
             {
-                return BadRequest("Invalid Data");
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest,ex);
             }
         }
 
