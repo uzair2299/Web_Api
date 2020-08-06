@@ -159,6 +159,7 @@ namespace Web_Api.Controllers
             }
             var _user = _applicationContext.Users.FirstOrDefault(x => x.UserId == id);
             _applicationContext.Users.Remove(_user);
+            _applicationContext.SaveChanges();
             return Ok();
         }
     }
